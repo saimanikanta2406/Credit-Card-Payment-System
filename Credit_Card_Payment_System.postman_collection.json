@@ -1,0 +1,324 @@
+{
+  "info": {
+    "name": "Credit Card Payment System - Local APIs",
+    "description": "Local development requests. Use test accounts and simulated payments only. Confirm auth routes against accounts/urls.py.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "django_base_url",
+      "value": "http://127.0.0.1:8000"
+    },
+    {
+      "key": "payment_base_url",
+      "value": "http://127.0.0.1:8001"
+    },
+    {
+      "key": "access_token",
+      "value": ""
+    },
+    {
+      "key": "refresh_token",
+      "value": ""
+    },
+    {
+      "key": "card_id",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register test user",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"postman_test_user\",\n  \"email\": \"postman_test_user@example.com\",\n  \"password\": \"ChangeThisTestPassword@123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{django_base_url}}/api/auth/register/"
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"postman_test_user\",\n  \"password\": \"ChangeThisTestPassword@123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{django_base_url}}/api/auth/login/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  " const b = pm.response.json();",
+                  " if (b.access) pm.collectionVariables.set('access_token', b.access);",
+                  " if (b.refresh) pm.collectionVariables.set('refresh_token', b.refresh);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{django_base_url}}/api/auth/profile/"
+          }
+        },
+        {
+          "name": "Refresh token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{django_base_url}}/api/auth/refresh/"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{django_base_url}}/api/auth/logout/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cards",
+      "item": [
+        {
+          "name": "List my cards",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{django_base_url}}/api/cards/"
+          }
+        },
+        {
+          "name": "Add test card",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cardholder_name\": \"Postman Test User\",\n  \"card_type\": \"CREDIT\",\n  \"card_number\": \"4111111111111111\",\n  \"expiry_month\": 12,\n  \"expiry_year\": 2030\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{django_base_url}}/api/cards/"
+          }
+        },
+        {
+          "name": "Delete card by ID",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{django_base_url}}/api/cards/{{card_id}}/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments - FastAPI",
+      "item": [
+        {
+          "name": "Health check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{payment_base_url}}/health"
+          }
+        },
+        {
+          "name": "Simulate successful payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"card_id\": 1,\n  \"amount\": \"500.00\",\n  \"simulate_success\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{payment_base_url}}/payments/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response is 201 Created', () => pm.response.to.have.status(201));",
+                  "if (pm.response.code === 201) {",
+                  " const b = pm.response.json();",
+                  " pm.test('Status is SUCCESS', () => pm.expect(b.status).to.eql('SUCCESS'));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Simulate failed payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"card_id\": 1,\n  \"amount\": \"125.00\",\n  \"simulate_success\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{payment_base_url}}/payments/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "item": [
+        {
+          "name": "List transaction history",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{django_base_url}}/api/transactions/"
+          }
+        },
+        {
+          "name": "Filter transaction history (adjust query names if needed)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{django_base_url}}/api/transactions/?status=SUCCESS&amount=500&date=2026-10-09"
+          }
+        }
+      ]
+    }
+  ]
+}

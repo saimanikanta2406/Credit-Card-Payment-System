@@ -1,0 +1,35 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Django
+*.log
+staticfiles/
+media/
+
+# Node/Vite
+node_modules/
+dist/
+.vite/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Database exports/backups: keep out of Git by default
+*.sql
+*.sql.gz
+*.dump
+*.bak
+
+# IDE/OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
